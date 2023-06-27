@@ -176,8 +176,8 @@ int main(int argc, char* argv[]) {
 	ok("successfully unhooked ntdll");
 	info("after unhooking:");
 	getHooks();
-	
-	
+
+
 
 	BOOL bIsDumped = dump(dwLsassPID);
 

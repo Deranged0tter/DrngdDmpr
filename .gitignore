@@ -445,3 +445,8 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+# custom
+.vs/
+x64/
+*.vcx
