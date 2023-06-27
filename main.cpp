@@ -1,3 +1,10 @@
+/*
+Created by deranged0tter
+For use only in environments that you own or have explicit permission to use this tool in.
+I am not liable for any misuse of this software.
+USE AT YOUR OWN RISK
+*/
+
 #pragma comment (lib, "dbghelp.lib")
 
 #include <windows.h>
