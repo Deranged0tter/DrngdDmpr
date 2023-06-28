@@ -8,4 +8,4 @@ $ ./drngdDmpr.exe <PID of LSASS>
 ```
 
 ## ToDo
-- [ ] automatically get pid of lsass
+- [X] automatically get pid of lsass
